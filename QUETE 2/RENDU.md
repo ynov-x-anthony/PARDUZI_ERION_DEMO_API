@@ -1,8 +1,12 @@
-# Quête 2 – Le Dockerfile
+# Quête 2 - Le Dockerfile
 
-> Version figée de cette quête : tag [`quete-2`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-2)
+Code de cette étape : tag `quete-2` (https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-2)
 
-## Comment tester
+Image : https://hub.docker.com/r/erionparduzi/demo-api (tag `1.0`)
+
+Fichiers : `api/Dockerfile` et `api/.dockerignore`
+
+## Pour tester
 
 ```bash
 git clone https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API.git
@@ -11,88 +15,53 @@ git checkout quete-2
 
 docker build -t demo-api:1.0 ./api
 docker run -d --name api -p 8080:3000 demo-api:1.0
-curl -s localhost:8080/health      # {"status":"UP"}
-curl -s localhost:8080/            # {"ok":true,"app":"demo-api",...}
-curl -s localhost:8080/products    # 503 : normal, pas encore de base
-docker rm -f api
-```
-
-Ou directement depuis l'image publiée, sans cloner :
-
-```bash
-docker run -d --name api -p 8080:3000 erionparduzi/demo-api:1.0
 curl -s localhost:8080/health
+curl -s localhost:8080/
 docker rm -f api
 ```
 
-## Liens
+Ou directement avec l'image de Docker Hub : `docker run -d --name api -p 8080:3000 erionparduzi/demo-api:1.0`
 
-- Repo GitHub : https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API
-  - [`api/Dockerfile`](../api/Dockerfile)
-  - [`api/.dockerignore`](../api/.dockerignore)
-- Image publiée (Docker Hub) : https://hub.docker.com/r/erionparduzi/demo-api (`erionparduzi/demo-api:1.0`)
-
-## Quiz
-
-1. Lister les images locales : **docker images**
-2. Supprimer une image : **docker rmi**
-3. Un Dockerfile : **un fichier texte décrivant les étapes de construction d'une image**
-4. Copier des fichiers de l'hôte : **COPY**
-5. Documenter un port : **EXPOSE**
-6. Construire une image : **docker build**
-7. Nommer/versionner au build : **avec -t nom:tag**
-8. Dockerfile plutôt que commit : **il garde une trace claire et reproductible des étapes de construction**
-9. Clé de cache d'un RUN : **le texte exact de la commande (et les layers précédents)**
-10. `COPY package.json` avant `COPY . .` : **pour garder l'installation des dépendances en cache quand seul le code change**
-11. `.dockerignore` : **exclure des fichiers du contexte de build (rapidité, cache, sécurité)**
-12. Mot de passe via ENV/ARG : **non : ARG est visible dans "docker history", ENV dans "docker inspect"**
-13. Alpine plus petite : **c'est une distribution minimaliste (busybox + musl), sans les paquets superflus**
-
-## Dockerfile
+## Le Dockerfile
 
 ```dockerfile
-# Base Node légère et épinglée (jamais :latest)
 FROM node:22-alpine
 
 WORKDIR /app
 
-# 1) Dépendances d'abord : cette couche reste en cache tant que
-#    package.json / package-lock.json ne changent pas
+# les dépendances d'abord pour garder le npm ci en cache
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-# 2) Le code ensuite : une modif de server.js ne reconstruit que cette couche
 COPY server.js db.js ./
 
 ENV PORT=3000
 EXPOSE 3000
 
-# Exec form : node est le PID 1 et reçoit bien SIGTERM
 CMD ["node", "server.js"]
 ```
 
-## Test
+## Résultats
 
 ```
-$ docker build -t demo-api:1.0 ./api
-$ docker run -d --name api -p 8080:3000 demo-api:1.0
 $ curl -s localhost:8080/health
 {"status":"UP"}
 $ curl -s localhost:8080/
 {"ok":true,"app":"demo-api","version":"dev"}
 $ curl -s localhost:8080/products
-{"error":"db_unavailable","detail":"Connection terminated due to connection timeout"}   (HTTP 503, normal : pas encore de base)
-$ docker rm -f api
+{"error":"db_unavailable","detail":"Connection terminated due to connection timeout"}
 ```
 
-## `docker image ls demo-api`
+/products renvoie une 503 vu qu'il n'y a pas encore de base, c'est normal.
+
+docker image ls demo-api :
 
 ```
 IMAGE          ID             DISK USAGE   CONTENT SIZE   EXTRA
-demo-api:1.0   6d1dc36ed56b        252MB         63.2MB        
+demo-api:1.0   6d1dc36ed56b        252MB         63.2MB
 ```
 
-## Preuve du cache (commentaire modifié dans `server.js`, `docker build --progress=plain -t demo-api:1.0 ./api`)
+Test du cache : j'ai changé un commentaire dans server.js puis relancé `docker build --progress=plain -t demo-api:1.0 ./api`. Le npm ci reste en CACHED, il n'y a que la copie du code qui est refaite :
 
 ```
 #5 [1/5] FROM docker.io/library/node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
@@ -105,3 +74,19 @@ demo-api:1.0   6d1dc36ed56b        252MB         63.2MB
 #9 [5/5] COPY server.js db.js ./
 #9 DONE 0.1s
 ```
+
+## Quiz
+
+1. docker images
+2. docker rmi
+3. un fichier texte qui décrit les étapes de construction d'une image
+4. COPY
+5. EXPOSE
+6. docker build
+7. -t nom:tag
+8. il garde une trace claire et reproductible des étapes
+9. le texte exact de la commande (et les layers d'avant)
+10. pour garder l'install des dépendances en cache quand seul le code change
+11. exclure des fichiers du contexte de build
+12. non, ARG se voit dans docker history et ENV dans docker inspect
+13. c'est une distrib minimaliste (busybox + musl)

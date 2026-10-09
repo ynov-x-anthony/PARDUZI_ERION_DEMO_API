@@ -1,14 +1,14 @@
 #!/usr/bin/env sh
-# Quête 4 - Builds multi-étapes et secrets : comparatif de taille + preuve "pas de fuite".
-# À lancer depuis la racine du repo : sh "QUETE 4/test.sh"
+# quete 4 : comparaison naive / multi + verif que le secret fuit pas
+# a lancer depuis la racine du repo : sh "QUETE 4/test.sh"
 set -e
 export MSYS_NO_PATHCONV=1
 
-# Faux .npmrc dans un dossier temporaire (on ne touche pas au vrai ~/.npmrc)
+# faux .npmrc dans un dossier temporaire pour pas toucher au vrai ~/.npmrc
 TMPD=$(mktemp -d)
 echo "//registry.npmjs.org/:_authToken=FAKE-123" > "$TMPD/.npmrc"
 SECRET_SRC="$TMPD/.npmrc"
-# Git Bash Windows : docker.exe attend un chemin Windows
+# sous git bash, docker veut un chemin windows
 command -v cygpath >/dev/null 2>&1 && SECRET_SRC=$(cygpath -w "$SECRET_SRC")
 
 echo "== Build naive"
@@ -24,10 +24,10 @@ multi=$(docker image inspect -f '{{.Size}}' demo-api:multi)
 echo "ratio naive/multi = $(awk "BEGIN{printf \"%.1f\", $naive/$multi}")x"
 
 echo "== Secret dans docker history ?"
-docker history --no-trunc demo-api:multi | grep -i FAKE-123 || echo "aucune ligne (OK)"
+docker history --no-trunc demo-api:multi | grep -i FAKE-123 || echo "aucune ligne "
 echo "== Secret dans le système de fichiers ?"
-# -u root : sinon "node" n a pas le droit de lire /root et on ne prouve rien
-docker run --rm -u root demo-api:multi sh -c 'cat /root/.npmrc 2>&1; grep -rsl FAKE-123 /app /root /home /tmp /etc /usr /var || echo "FAKE-123 introuvable dans tout le systeme de fichiers (OK)"'
+# en root sinon on a juste permission denied sur /root
+docker run --rm -u root demo-api:multi sh -c 'cat /root/.npmrc 2>&1; grep -rsl FAKE-123 /app /root /home /tmp /etc /usr /var || echo "FAKE-123 introuvable dans tout le systeme de fichiers "'
 
 echo "== Contenu de /app (pas de sources superflues)"
 docker run --rm demo-api:multi ls -la /app

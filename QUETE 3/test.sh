@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
-# Quête 3 - Dockerfile et sécurité : build + lancement durci + preuves.
-# À lancer depuis la racine du repo : sh "QUETE 3/test.sh"
-# (sous Git Bash Windows, MSYS_NO_PATHCONV évite la réécriture des chemins /tmp, /app...)
+# quete 3 : build + lancement durci + verifs
+# a lancer depuis la racine du repo : sh "QUETE 3/test.sh"
+# MSYS_NO_PATHCONV pour que git bash sur windows touche pas aux chemins /tmp, /app...
 set -e
 export MSYS_NO_PATHCONV=1
 
-# Nettoyage d'un éventuel essai précédent
+# on nettoie si un ancien test traine
 docker rm -f api demo-db >/dev/null 2>&1 || true
 docker network rm demo_net >/dev/null 2>&1 || true
 
@@ -49,5 +49,5 @@ docker inspect -f 'health={{.State.Health.Status}}' api
 if [ "$KEEP" != "1" ]; then
   docker rm -f api demo-db >/dev/null
   docker network rm demo_net >/dev/null
-  echo "== Nettoyé (KEEP=1 pour garder les conteneurs)"
+  echo "== nettoyage fait (KEEP=1 pour garder les conteneurs)"
 fi

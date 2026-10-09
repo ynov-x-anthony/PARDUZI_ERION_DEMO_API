@@ -1,20 +1,13 @@
-# Dépendances locales : réinstallées proprement par npm ci
 node_modules
 npm-debug.log
 *.log
-
-# Git et CI
 .git
 .gitignore
 .github
-
-# Secrets et config locale
 .env
 .env.*
 *.pem
 *.key
-
-# Docs, tests, fichiers Docker
 *.md
 test
 tests

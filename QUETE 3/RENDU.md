@@ -1,62 +1,53 @@
-# Quête 3 – Dockerfile et sécurité
+# Quête 3 - Dockerfile et sécurité
 
-> Version figée de cette quête : tag [`quete-3`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-3)
-> Image publiée : [`erionparduzi/demo-api:hardened`](https://hub.docker.com/r/erionparduzi/demo-api/tags)
+Code de cette étape : tag `quete-3` (https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-3)
 
-## Comment tester
+Image : `erionparduzi/demo-api:hardened` sur Docker Hub
+
+## Pour tester
 
 ```bash
 git clone https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API.git
 cd PARDUZI_ERION_DEMO_API
 git checkout quete-3
-sh "QUETE 3/test.sh"          # KEEP=1 sh "QUETE 3/test.sh" pour garder les conteneurs
+sh "QUETE 3/test.sh"
 ```
 
-Le script [`test.sh`](test.sh) construit l'image, crée le réseau `demo_net`, lance PostgreSQL (avec `db/init.sql`), lance l'API durcie puis affiche toutes les preuves ci-dessous.
+J'ai fait un petit script `test.sh` pour pas avoir à tout retaper à chaque fois : il build l'image, crée le réseau demo_net, lance postgres avec le init.sql, lance l'API en mode durci et affiche les vérifs. À la fin il supprime tout (mettre `KEEP=1` devant pour garder les conteneurs).
 
-## Ce qui a changé
+## Ce que j'ai changé
 
-- [`api/Dockerfile`](../api/Dockerfile) :
-  - base épinglée `node:22.11-alpine` ;
-  - `COPY --chown=node:node` pour les manifestes et le code, `USER node` juste avant le `CMD` ;
-  - `npm cache clean --force` dans le même `RUN` que `npm ci` ;
-  - `HEALTHCHECK` sur `/health` (fetch natif de Node, aucun paquet en plus) ;
-  - `EXPOSE 3000` (port ≥ 1024).
-- [`api/.dockerignore`](../api/.dockerignore) : `.git`, `.env*`, `node_modules`, `*.md`, clés (`*.pem`, `*.key`), tests.
+Dans `api/Dockerfile` :
+- base `node:22.11-alpine` au lieu de `node:22-alpine`
+- `COPY --chown=node:node` et `USER node` juste avant le CMD
+- un HEALTHCHECK sur /health (avec le fetch de node, comme ça pas besoin d'installer curl)
+- `npm cache clean --force` dans le même RUN que npm ci
 
-## Dockerfile durci
+Dans `api/.dockerignore` j'ai rajouté les fichiers de clés (*.pem, *.key) et les dossiers de tests.
 
 ```dockerfile
-# Base épinglée sur une version mineure précise (ni node:22-alpine, ni latest)
 FROM node:22.11-alpine
 
 WORKDIR /app
 
-# 1) Dépendances d'abord (couche mise en cache tant que les manifestes ne changent pas).
-#    Les fichiers appartiennent à "node" (uid 1000, fourni par l'image) : le chown
-#    se fait AVANT de basculer sur USER node.
+# on donne les fichiers à l'utilisateur node avant de passer en USER node
 COPY --chown=node:node package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
-# 2) Le code ensuite
 COPY --chown=node:node server.js db.js ./
 
 ENV NODE_ENV=production PORT=3000
-# Port >= 1024 : un utilisateur non-root ne peut pas écouter en dessous
 EXPOSE 3000
 
-# Sonde de liveness légère (fetch natif de Node 22, pas de curl à installer)
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-# Utilisateur non privilégié, juste avant le CMD
 USER node
 
-# Exec form : node est le PID 1 et reçoit SIGTERM
 CMD ["node", "server.js"]
 ```
 
-## Commande `docker run` durcie
+## La commande docker run
 
 ```bash
 docker network create demo_net
@@ -73,45 +64,38 @@ docker run -d --name api -p 8080:3000 \
   demo-api:hardened
 ```
 
-## Preuves (sortie de `test.sh`)
+## Résultats
 
 ```
-== Build
-sha256:b4aa5de19ffaab0473fd1faa61b4137ecb46462a2fb34e3114cde6bbe6626eee
-== Non-root
+$ docker run --rm demo-api:hardened id
 uid=1000(node) gid=1000(node) groups=1000(node),1000(node)
-== Réseau + base
-== API durcie
-== /health
+
+$ curl -s localhost:8080/health
 {"status":"UP"}
-== /ready
+$ curl -s localhost:8080/ready
 {"status":"READY"}
-== /products
-[{"id":3,"name":"T-shirt conteneur","price_cents":1990,"created_at":"2026-10-09T06:39:31.204Z"},{"id":2,"name":"Mug Docker","price_cents":990,"created_at":"2026-10-09T06:39:31.204Z"},{"id":1,"name":"Sticker Demo","price_cents":150,"created_at":"2026-10-09T06:39:31.204Z"}]
-== Écriture sur le rootfs
+
+$ docker exec api sh -c 'touch /app/x 2>&1 || echo "rootfs read-only OK"'
 touch: /app/x: Read-only file system
 rootfs read-only OK
-== Inspect
-readonly=true capdrop=[ALL] secopt=[no-new-privileges] pids=200 mem=268435456 user=node
-== Healthcheck (attente du 1er passage)
-health=healthy
-== Nettoyé (KEEP=1 pour garder les conteneurs)
+
+$ docker inspect -f 'readonly={{.HostConfig.ReadonlyRootfs}} capdrop={{.HostConfig.CapDrop}}' api
+readonly=true capdrop=[ALL]
 ```
 
-- `id` → `uid=1000(node)` : **non-root**
-- `touch /app/x` → `Read-only file system` : **rootfs en lecture seule**
-- `docker inspect` → **`readonly=true capdrop=[ALL]`**, plus `no-new-privileges`, `pids=200`, `mem=256 Mo`, `user=node`
-- `health=healthy` : le `HEALTHCHECK` fonctionne
+Le conteneur passe aussi en `healthy` après le premier healthcheck. /products renvoie bien les 3 produits du init.sql, donc la connexion à la base marche même avec le conteneur en read-only.
+
+Petit souci rencontré : sous Git Bash sur Windows, les chemins comme `/tmp` ou `/docker-entrypoint-initdb.d` étaient transformés en chemins Windows. J'ai mis `MSYS_NO_PATHCONV=1` dans le script pour éviter ça.
 
 ## Quiz
 
-1. Root dans le conteneur : **sans user namespace, root dans le conteneur = root sur l'hôte (évasion, bind mount) + capabilities larges**
-2. Où placer `USER app` : **juste avant le CMD, après avoir fait les chown/installations nécessaires en root**
-3. Non-root sur le port 80 : **non (port < 1024) : on écoute sur 3000/8080 et on publie avec -p 80:3000**
-4. Secret en ARG : **il est visible dans "docker history --no-trunc" → compromis**
-5. `COPY creds.json` puis `RUN rm` : **non : il reste dans le layer du COPY (récupérable)**
-6. `--cap-drop ALL` : **retire toutes les capabilities Linux du conteneur (on n'en rajoute que le strict nécessaire)**
-7. `--read-only` (+ `--tmpfs /tmp`) : **rendre le système de fichiers du conteneur non modifiable, sauf /tmp en RAM**
-8. Monter `docker.sock` : **lui donner le contrôle du démon Docker, donc de l'hôte : à réserver aux outils de confiance**
-9. Bannir `:latest` : **tag mutable : on ne sait pas ce qui tourne ni comment revenir en arrière**
-10. `no-new-privileges` : **l'escalade de privilèges via des binaires setuid dans le conteneur**
+1. sans user namespace, root dans le conteneur = root sur l'hôte + capabilities larges
+2. juste avant le CMD, après les chown / installs
+3. non, port < 1024 : on écoute sur 3000 et on publie avec -p 80:3000
+4. oui, visible dans docker history --no-trunc
+5. non, il reste dans le layer du COPY
+6. retire toutes les capabilities Linux
+7. rend le système de fichiers non modifiable sauf /tmp en RAM
+8. ça donne le contrôle du démon Docker, donc de l'hôte
+9. tag qui change : on sait pas ce qui tourne ni comment revenir en arrière
+10. l'escalade de privilèges via les binaires setuid

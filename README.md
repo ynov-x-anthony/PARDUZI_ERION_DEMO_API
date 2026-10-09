@@ -90,17 +90,16 @@ et c'est lui qui sera évalué, pas le starter.
 
 ## Mes rendus (PARDUZI Erion)
 
-Chaque quête est figée par un **tag git** : on peut tester une quête seule, dans l'état exact où elle a été rendue.
+Chaque quête a un dossier `QUETE N` avec un `RENDU.md` (résultats, quiz et comment tester).
+J'ai aussi mis un tag git à la fin de chaque quête pour pouvoir revenir au code de cette étape :
 
 ```bash
-git clone https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API.git
-cd PARDUZI_ERION_DEMO_API
-git checkout quete-4      # remplacer par la quête à tester
+git checkout quete-3
 ```
 
-| Quête | Sujet | Rendu + « Comment tester » | Code figé |
+| Quête | Sujet | Rendu | Tag |
 |---|---|---|---|
-| 1 | Découverte de Docker | [QUETE 1/RENDU.md](QUETE%201/RENDU.md) | [`quete-1`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-1) |
-| 2 | Le Dockerfile | [QUETE 2/RENDU.md](QUETE%202/RENDU.md) | [`quete-2`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-2) |
-| 3 | Dockerfile et sécurité | [QUETE 3/RENDU.md](QUETE%203/RENDU.md) | [`quete-3`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-3) |
-| 4 | Builds multi-étapes et secrets | [QUETE 4/RENDU.md](QUETE%204/RENDU.md) | [`quete-4`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-4) |
+| 1 | Découverte de Docker | [QUETE 1](QUETE%201/RENDU.md) | [quete-1](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-1) |
+| 2 | Le Dockerfile | [QUETE 2](QUETE%202/RENDU.md) | [quete-2](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-2) |
+| 3 | Dockerfile et sécurité | [QUETE 3](QUETE%203/RENDU.md) | [quete-3](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-3) |
+| 4 | Builds multi-étapes et secrets | [QUETE 4](QUETE%204/RENDU.md) | [quete-4](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-4) |

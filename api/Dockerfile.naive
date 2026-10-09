@@ -1,5 +1,4 @@
-# REPÈRE DE COMPARAISON UNIQUEMENT (quête 4) - volontairement NON optimisé.
-# Ce n'est PAS le Dockerfile de prod : voir Dockerfile (durci) et Dockerfile.multi.
+# version "naive" juste pour comparer les tailles avec Dockerfile.multi (pas utilisée en vrai)
 FROM node:22
 WORKDIR /app
 COPY . .
