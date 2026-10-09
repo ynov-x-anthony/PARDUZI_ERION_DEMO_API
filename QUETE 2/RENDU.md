@@ -1,5 +1,30 @@
 # Quête 2 – Le Dockerfile
 
+> Version figée de cette quête : tag [`quete-2`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-2)
+
+## Comment tester
+
+```bash
+git clone https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API.git
+cd PARDUZI_ERION_DEMO_API
+git checkout quete-2
+
+docker build -t demo-api:1.0 ./api
+docker run -d --name api -p 8080:3000 demo-api:1.0
+curl -s localhost:8080/health      # {"status":"UP"}
+curl -s localhost:8080/            # {"ok":true,"app":"demo-api",...}
+curl -s localhost:8080/products    # 503 : normal, pas encore de base
+docker rm -f api
+```
+
+Ou directement depuis l'image publiée, sans cloner :
+
+```bash
+docker run -d --name api -p 8080:3000 erionparduzi/demo-api:1.0
+curl -s localhost:8080/health
+docker rm -f api
+```
+
 ## Liens
 
 - Repo GitHub : https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API

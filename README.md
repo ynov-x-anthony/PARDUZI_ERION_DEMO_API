@@ -90,7 +90,15 @@ et c'est lui qui sera évalué, pas le starter.
 
 ## Mes rendus (PARDUZI Erion)
 
-| Quête | Sujet | Rendu |
-|---|---|---|
-| 1 | Découverte de Docker | [QUETE 1/RENDU.md](QUETE%201/RENDU.md) |
-| 2 | Le Dockerfile | [QUETE 2/RENDU.md](QUETE%202/RENDU.md) |
+Chaque quête est figée par un **tag git** : on peut tester une quête seule, dans l'état exact où elle a été rendue.
+
+```bash
+git clone https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API.git
+cd PARDUZI_ERION_DEMO_API
+git checkout quete-2      # remplacer par la quête à tester
+```
+
+| Quête | Sujet | Rendu + « Comment tester » | Code figé |
+|---|---|---|---|
+| 1 | Découverte de Docker | [QUETE 1/RENDU.md](QUETE%201/RENDU.md) | [`quete-1`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-1) |
+| 2 | Le Dockerfile | [QUETE 2/RENDU.md](QUETE%202/RENDU.md) | [`quete-2`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-2) |

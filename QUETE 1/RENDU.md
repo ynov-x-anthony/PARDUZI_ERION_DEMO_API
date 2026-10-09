@@ -1,5 +1,18 @@
 # Quête 1 – Découverte de Docker
 
+> Version figée de cette quête : tag [`quete-1`](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-1)
+
+## Comment tester
+
+Aucun fichier du repo n'est nécessaire, tout se fait avec l'image publique `postgres:16-alpine` :
+
+```bash
+docker run -d --name demo-db -e POSTGRES_USER=demo -e POSTGRES_PASSWORD=demo -e POSTGRES_DB=demo postgres:16-alpine
+docker logs demo-db 2>&1 | grep "ready to accept connections"
+docker exec -it demo-db psql -U demo -d demo -c "CREATE TABLE products (id serial primary key, name text, price_cents int);" -c "INSERT INTO products (name, price_cents) VALUES ('Sticker Démo', 150);" -c "SELECT * FROM products;" -c "\dt"
+docker stop demo-db && docker rm demo-db
+```
+
 ## Quiz
 
 1. Docker Hub : **propose des images docker**, **est un site web**
