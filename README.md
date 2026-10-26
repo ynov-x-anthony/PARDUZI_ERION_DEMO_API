@@ -104,3 +104,4 @@ git checkout quete-3
 | 3 | Dockerfile et sécurité | [QUETE 3](QUETE%203/RENDU.md) | [quete-3](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-3) |
 | 4 | Builds multi-étapes et secrets | [QUETE 4](QUETE%204/RENDU.md) | [quete-4](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-4) |
 | 5 | Les volumes | [QUETE 5](QUETE%205/RENDU.md) | [quete-5](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-5) |
+| 6 | Les réseaux | [QUETE 6](QUETE%206/RENDU.md) | [quete-6](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-6) |
