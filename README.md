@@ -107,3 +107,4 @@ git checkout quete-3
 | 6 | Les réseaux | [QUETE 6](QUETE%206/RENDU.md) | [quete-6](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-6) |
 | 7 | Compose | [QUETE 7](QUETE%207/RENDU.md) | [quete-7](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-7) |
 | 8 | Analyse de vulnérabilités avec Trivy | [QUETE 8](QUETE%208/RENDU.md) | [quete-8](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-8) |
+| 9 | Microservices et déploiement continu | [QUETE 9](QUETE%209/RENDU.md) | [quete-9](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-9) |
