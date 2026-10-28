@@ -106,3 +106,4 @@ git checkout quete-3
 | 5 | Les volumes | [QUETE 5](QUETE%205/RENDU.md) | [quete-5](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-5) |
 | 6 | Les réseaux | [QUETE 6](QUETE%206/RENDU.md) | [quete-6](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-6) |
 | 7 | Compose | [QUETE 7](QUETE%207/RENDU.md) | [quete-7](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-7) |
+| 8 | Analyse de vulnérabilités avec Trivy | [QUETE 8](QUETE%208/RENDU.md) | [quete-8](https://github.com/ynov-x-anthony/PARDUZI_ERION_DEMO_API/tree/quete-8) |
