@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log
+*.log
+.git
+.gitignore
+.github
+.env
+.env.*
+*.pem
+*.key
+*.md
+test
+tests
+coverage
+Dockerfile*
+.dockerignore

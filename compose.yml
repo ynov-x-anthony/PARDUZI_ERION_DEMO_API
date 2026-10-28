@@ -1,23 +1,44 @@
 name: demo-api
 
+# En local : docker compose up -d --build (construit les images)
+# En deploiement : IMAGE_TAG=v1.5.0 docker compose pull && docker compose up -d --no-build
+#   -> on recupere les images construites et scannees par la CI sur GHCR
+
 services:
   api:
-    build: ./api
-    image: demo-api:compose
+    build:
+      context: ./api
+      dockerfile: Dockerfile.multi
+    image: ghcr.io/ynov-x-anthony/parduzi_erion_demo_api/api:${IMAGE_TAG:-dev}
     environment:
       PGHOST: db
       PGUSER: ${POSTGRES_USER}
       PGDATABASE: ${POSTGRES_DB}
       # le mot de passe est lu depuis le secret, pas en clair
       PGPASSWORD_FILE: /run/secrets/db_password
+      NOTIFIER_PORT: "4000"
     secrets: [db_password]
     ports:
       - "${API_PORT:-8080}:3000"
+    networks: [front, back]
     depends_on:
       db:
         condition: service_healthy
     restart: unless-stopped
     # on garde le durcissement de la quete 3
+    read_only: true
+    tmpfs: ["/tmp:size=16m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+
+  notifier:
+    build: ./notifier
+    image: ghcr.io/ynov-x-anthony/parduzi_erion_demo_api/notifier:${IMAGE_TAG:-dev}
+    environment:
+      PORT: "4000"
+    # pas de ports: et seulement sur back, personne l'appelle de l'exterieur
+    networks: [back]
+    restart: unless-stopped
     read_only: true
     tmpfs: ["/tmp:size=16m"]
     cap_drop: ["ALL"]
@@ -33,6 +54,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks: [back]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -44,8 +66,14 @@ services:
     image: adminer:4
     ports:
       - "${ADMINER_PORT:-8081}:8080"
+    # front pour etre publie, back pour joindre la base
+    networks: [front, back]
     depends_on: [db]
     restart: unless-stopped
+
+networks:
+  front:
+  back:
 
 volumes:
   pgdata:

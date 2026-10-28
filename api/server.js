@@ -62,12 +62,30 @@ app.post('/products', async (req, res) => {
   if (!name || !Number.isInteger(priceCents) || priceCents < 0) {
     return res.status(400).json({ error: 'name (string) et price_cents (entier >= 0) requis' });
   }
+  let product;
   try {
-    res.status(201).json(await db.addProduct(name, priceCents));
+    product = await db.addProduct(name, priceCents);
   } catch (err) {
-    res.status(503).json({ error: 'db_unavailable', detail: err.message });
+    return res.status(503).json({ error: 'db_unavailable', detail: err.message });
   }
+  res.status(201).json(product);
+  notify(product);
 });
+
+// Appel au service notifier, en best-effort : pas de await, et une erreur
+// (notifier arrete, timeout...) est juste loggee, elle casse pas le POST.
+function notify(product) {
+  const host = process.env.NOTIFIER_HOST || 'notifier';
+  const port = process.env.NOTIFIER_PORT || 4000;
+  fetch(`http://${host}:${port}/notify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: product.id, name: product.name, price_cents: product.price_cents }),
+    signal: AbortSignal.timeout(2000),
+  }).catch((err) => {
+    console.error(JSON.stringify({ level: 'warn', msg: 'notify failed', err: err.message }));
+  });
+}
 
 const server = app.listen(PORT, () => {
   console.log(JSON.stringify({ level: 'info', msg: 'demo-api started', port: PORT, version: VERSION }));
